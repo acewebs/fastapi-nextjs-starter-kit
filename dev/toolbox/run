@@ -1,0 +1,33 @@
+#!/bin/bash
+set -e
+
+toolbox_dir=$(cd "$(dirname "$0")" && pwd)
+project_dir="$toolbox_dir/../.."
+
+# Import utils (in order)
+for file in "$toolbox_dir/utils/"*.sh; do
+  [ -f "$file" ] || continue
+  source "$file"
+done
+
+# Source env
+ensure_env
+
+# Import commands
+for file in "$toolbox_dir/commands/"*.sh; do
+  [ -f "$file" ] || continue
+  grep -q 'case *"\$1" *in' "$file" || continue
+  source "$file"
+done
+
+case "$1" in
+    -h|--help|help|"")
+        echo -e "$HELP_TEXT"
+        ;;
+    *)
+        error "Unknown command: \"$1\""
+        echo ""
+        echo -e "$HELP_TEXT"
+        exit 1
+        ;;
+esac
